@@ -11,7 +11,7 @@ var tpl *template.Template
 func main () {
 
 	//func ParseGlob(pattern string) (*Template, error)
-	tpl, _ = template.ParseGlob("templates/*.html")
+	tpl = template.Must(template.ParseGlob("templates/*.html"))
 	//func (t *Template) ParseFiles(filenames ...string) (*Template, error)
 	// tpl, _ = tpl.ParseGlob("templates/*.html")
 

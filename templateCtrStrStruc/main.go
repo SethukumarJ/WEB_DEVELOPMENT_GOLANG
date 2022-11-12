@@ -38,7 +38,7 @@ func main () {
 		},
 	}
 
-	tpl,  _ = tpl.ParseGlob("templates/*.html")
+	tpl = template.Must(tpl.ParseGlob("templates/*.html"))
 	http.HandleFunc("/productinfo", productInfoHandler)
 	http.ListenAndServe(":8080",nil)
 
