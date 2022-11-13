@@ -9,7 +9,7 @@ import (
 
 	
 	"golang.org/x/crypto/bcrypt"
-	"github.com/go-sql-driver/mysql"
+	_"github.com/go-sql-driver/mysql"
 	
 	) 
 // "github.com/go-sql-driver/mysql v1.6.0" is not a valid import path
@@ -48,7 +48,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.FormValue("username")
 
-	nameAlphaNumeric := true
+	var	nameAlphaNumeric = true
 
 	for _, char := range username {
 
@@ -68,7 +68,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("password:", password, "\npswdLength:", len(password))
 	//variables that mush pass for password creation criteria
 	var pswdLowercase, pswdUppercase, pswdNumber,pswdSpecial,pswdLength,paswdNoSpaces bool
-	pswdNoSpaces = true
+	paswdNoSpaces = true
 
 	for _, char := range password {
 
@@ -94,6 +94,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	if 11 < len(password) && len(password) < 60 {
 		pswdLength = true
 	}
+	//Check pswd criteria
 
 	fmt.Println("pswdLowercase : ",pswdLowercase, "\npswdUppercase :", pswdUppercase, "\npswdNumber :", pswdNumber,
 "\npswdSpecial :", pswdSpecial, "\npasswordNoSpaces :",paswdNoSpaces)
@@ -123,5 +124,37 @@ var hash []byte
 hash, err = bcrypt.GenerateFromPassWord([]byte(password),bcrypt.DefaultCost)
 if err != nil {
 	fmt.Println("bcrypt err: ",err)
+	tpl.ExecuteTemplate(w, "register.html","there was a problem registering account")
+	return
 }
+
+fmt.Println("hash:",hash)
+fmt.Println("string(hash):",string(hash))
+
+//func (db *DB) Prepare(qurery string) (*Stmt, error)
+
+var insertStmt *sql.Stmt
+
+insertStmt, err = db.Prepare("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?);")
+if err != nil {
+	fmt.Println("error preparing statement:", err)
+	tpl.ExecuteTemplate(w, "regiseter.html", "there was a problem registering account")
+	return
+}
+
+defer insertStmt.Close()
+var result sql.Result
+// func (s *Stmt) Exec(args ...interface{}) (Result, error)
+result, err = insertStmt.Exec(username, hash)
+rowsAff, _ := result.RowsAffected()
+lastIns, _ := result.LastInsertId()
+fmt.Println("rowAff:", rowsAff)
+fmt.Println("lastIns:", lastIns)
+fmt.Println("err:", err)
+if err != nil  {
+	fmt.Println("error inserting new user")
+	tpl.ExecuteTemplate(w, "refister.html", "there was a problem registering account")
+	return
+}
+fmt.Fprint(w, "congrats, yoiur account has been successfully created")
 }
