@@ -7,11 +7,10 @@ import (
 	"net/http"
 	"unicode"
 
-	
+	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
-	_"github.com/go-sql-driver/mysql"
-	
-	) 
+)
+
 // "github.com/go-sql-driver/mysql v1.6.0" is not a valid import path
 var tpl *template.Template
 var db *sql.DB
@@ -48,14 +47,14 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	username := r.FormValue("username")
 
-	var	nameAlphaNumeric = true
+	var nameAlphaNumeric = true
 
 	for _, char := range username {
 
 		if unicode.IsLetter(char) == false && unicode.IsNumber(char) == false {
 			nameAlphaNumeric = false
 		}
-		
+
 	}
 	//check username pswdlength
 	var nameLength bool
@@ -67,7 +66,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	fmt.Println("password:", password, "\npswdLength:", len(password))
 	//variables that mush pass for password creation criteria
-	var pswdLowercase, pswdUppercase, pswdNumber,pswdSpecial,pswdLength,paswdNoSpaces bool
+	var pswdLowercase, pswdUppercase, pswdNumber, pswdSpecial, pswdLength, paswdNoSpaces bool
 	paswdNoSpaces = true
 
 	for _, char := range password {
@@ -75,7 +74,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case unicode.IsLower(char):
 			pswdLowercase = true
-			
+
 		case unicode.IsUpper(char):
 			pswdUppercase = true
 
@@ -90,71 +89,71 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	
 
 	if 11 < len(password) && len(password) < 60 {
 		pswdLength = true
 	}
 	//Check pswd criteria
 
-	fmt.Println("pswdLowercase : ",pswdLowercase, "\npswdUppercase :", pswdUppercase, "\npswdNumber :", pswdNumber,
-"\npswdSpecial :", pswdSpecial, "\npasswordNoSpaces :",paswdNoSpaces)
+	fmt.Println("pswdLowercase : ", pswdLowercase, "\npswdUppercase :", pswdUppercase, "\npswdNumber :", pswdNumber,
+		"\npswdSpecial :", pswdSpecial, "\npasswordNoSpaces :", paswdNoSpaces)
 
-if !pswdLowercase || !pswdUppercase || !pswdNumber || !pswdLength || !pswdLength || !paswdNoSpaces {
-	tpl.ExecuteTemplate(w , "register.html","please check username and password criteria")
-	return
-}
+	if !pswdLowercase || !pswdUppercase || !pswdNumber || !pswdLength || !paswdNoSpaces || !nameAlphaNumeric || !nameLength {
+		tpl.ExecuteTemplate(w, "register.html", "please check username and password criteria")
+		return
+	}
 
-//check if username already exists for availability
+	//check if username already exists for availability
 
-stmt := "SELECT UserId From bcrypt Where username = ?"
+	stmt := "SELECT UserId From bcrypt Where username = ?"
 
-row := db.QueryRow(stmt, username)
+	row := db.QueryRow(stmt, username)
 
-var uID string
-err := row.Scan(&uID)
-if err != sql.ErrNoRows {
-	fmt.Println("username already exists, err: ", err)
-	tpl.ExecuteTemplate(w, "register.html","username already taken")
-	return
-}
+	var uID string
+	err := row.Scan(&uID)
+	if err != sql.ErrNoRows {
+		fmt.Println("username already exists, err: ", err)
+		tpl.ExecuteTemplate(w, "register.html", "username already taken")
+		return
+	}
 
+	var hash []byte
 
-var hash []byte
+	hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println("bcrypt err: ", err)
+		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
+		return
+	}
 
-hash, err = bcrypt.GenerateFromPassWord([]byte(password),bcrypt.DefaultCost)
-if err != nil {
-	fmt.Println("bcrypt err: ",err)
-	tpl.ExecuteTemplate(w, "register.html","there was a problem registering account")
-	return
-}
+	fmt.Println("hash:", hash)
+	fmt.Println("string(hash):", string(hash))
 
-fmt.Println("hash:",hash)
-fmt.Println("string(hash):",string(hash))
+	//func (db *DB) Prepare(qurery string) (*Stmt, error)
 
-//func (db *DB) Prepare(qurery string) (*Stmt, error)
+	var insertStmt *sql.Stmt
 
-var insertStmt *sql.Stmt
+	insertStmt, err = db.Prepare("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?);")
+	if err != nil {
+		fmt.Println("error preparing statement:", err)
+		tpl.ExecuteTemplate(w, "regiseter.html", "there was a problem registering account")
+		return
+	}
 
-insertStmt, err = db.Prepare("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?);")
-if err != nil {
-	fmt.Println("error preparing statement:", err)
-	tpl.ExecuteTemplate(w, "regiseter.html", "there was a problem registering account")
-	return
-}
-
-defer insertStmt.Close()
-var result sql.Result
-// func (s *Stmt) Exec(args ...interface{}) (Result, error)
-result, err = insertStmt.Exec(username, hash)
-rowsAff, _ := result.RowsAffected()
-lastIns, _ := result.LastInsertId()
-fmt.Println("rowAff:", rowsAff)
-fmt.Println("lastIns:", lastIns)
-fmt.Println("err:", err)
-if err != nil  {
-	fmt.Println("error inserting new user")
-	tpl.ExecuteTemplate(w, "refister.html", "there was a problem registering account")
-	return
-}
-fmt.Fprint(w, "congrats, yoiur account has been successfully created")
+	defer insertStmt.Close()
+	var result sql.Result
+	// func (s *Stmt) Exec(args ...interface{}) (Result, error)
+	result, err = insertStmt.Exec(username, hash)
+	rowsAff, _ := result.RowsAffected()
+	lastIns, _ := result.LastInsertId()
+	fmt.Println("rowAff:", rowsAff)
+	fmt.Println("lastIns:", lastIns)
+	fmt.Println("err:", err)
+	if err != nil {
+		fmt.Println("error inserting new user")
+		tpl.ExecuteTemplate(w, "refister.html", "there was a problem registering account")
+		return
+	}
+	fmt.Fprint(w, "congrats, yoiur account has been successfully created")
 }
