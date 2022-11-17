@@ -27,15 +27,15 @@ type Page struct {
 }
 
 var userDB = map[string]string{
-	"password": "f",
-	"email":    "f@gmail.com",
+	"password": "sethi123",
+	"email":    "sethu@gmail.com",
 }
 var P = Page{
 	Status: false,
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Cache-Control", "no-cache,must-revalidate")
 	
 
 	ok := Middleware(w, r)
@@ -70,14 +70,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		session, _ := Store.Get(r, "started")
 
-		session.Values["id"] = "francis"
+		session.Values["id"] = "Sethu"
 		P.Header1 = session.Values["id"]
 		fmt.Println(P.Header1)
 		session.Save(r, w)
 
 		fmt.Println(session)
 
-		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Cache-Control", "no-cache, must-revalidate")
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -91,7 +91,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func Logouthandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Cache-Control", "no-cache, must-revalidate")
 
 	if P.Status == true {
 		session, _ := Store.Get(r, "started")
