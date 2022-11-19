@@ -11,8 +11,6 @@ import (
 	"tawesoft.co.uk/go/dialog"
 )
 
-
-
 var tpl *template.Template
 var Store = sessions.NewCookieStore([]byte("francis"))
 
@@ -21,9 +19,9 @@ func init() {
 }
 
 type Page struct {
-	Status     bool
-	Header1    interface{}
-	Valid      bool
+	Status  bool
+	Header1 interface{}
+	Valid   bool
 }
 
 var userDB = map[string]string{
@@ -35,8 +33,7 @@ var P = Page{
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache,must-revalidate")
-	
+	w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
 	ok := Middleware(w, r)
 
@@ -52,11 +49,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("error while parsing file", err)
 		return
 	}
-	
+
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	
 
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "there is an error parsing %v", err)
@@ -77,7 +73,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println(session)
 
-		w.Header().Set("Cache-Control", "no-cache, must-revalidate")
+		w.Header().Set("Cache-Control", "no-cache,no-store,must-revalidate")
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
@@ -91,7 +87,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 func Logouthandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-cache, must-revalidate")
+	w.Header().Set("Cache-Control", "no-cache,must-revalidate")
 
 	if P.Status == true {
 		session, _ := Store.Get(r, "started")
@@ -129,8 +125,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-
 
 func main() {
 	http.HandleFunc("/", index)
