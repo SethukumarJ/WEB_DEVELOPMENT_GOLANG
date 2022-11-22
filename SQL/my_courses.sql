@@ -14,4 +14,6 @@ VALUES ('CMPS3162');
 --Query to read the data from vs code is:
 
     
-    --#\i 
+    --#\i my_courses
+    --\dt
+    --\ds my_courses
