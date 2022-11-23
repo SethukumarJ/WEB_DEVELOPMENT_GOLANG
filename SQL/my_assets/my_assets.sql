@@ -1,3 +1,4 @@
+
 -- The table stores my stocks 
 
 
@@ -43,3 +44,10 @@ CREATE TABLE stocks (
 --   4 | LULU   |         50 | 2019-12-21
 --   5 | TSLA   |       5000 | 2022-01-01
 -- (5 rows)
+
+
+
+
+
+
+
