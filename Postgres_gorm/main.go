@@ -123,6 +123,7 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 }
 
 func main() {
+	fmt.Println("hi")
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
@@ -133,10 +134,11 @@ func main() {
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   os.Getenv("DB_NAME"),
-		SSLMode:  os.Getenv("DB_SSLMODE"),
 	}
 
-	db, err := storage.NewConnection(*config)
+	fmt.Println(config)
+
+	db, err := storage.NewConnection(config)
 
 	if err != nil {
 		log.Fatal("could not import database")
