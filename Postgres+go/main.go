@@ -27,7 +27,7 @@ func main () {
 	dsn := fmt.Sprintf("host =%s port =%s user = %s, password=%s, dname=%s",host,port,user,password,dname)
 
 	//Establesh a connection ato the database
-	db, err ;= sql.Open("postgres",dsn)
+	db, err := sql.Open("postgres",dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
