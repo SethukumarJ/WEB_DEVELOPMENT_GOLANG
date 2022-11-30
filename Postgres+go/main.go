@@ -24,7 +24,7 @@ const (
 
 
 func main () {
-	dsn := fmt.Sprintf("host =%s port =%s user = %s, password=%s, dname=%s",host,port,user,password,dname)
+	dsn := fmt.Sprintf("host =%s port =%d user = %s, password=%s, dname=%s",host,port,user,password,dname)
 
 	//Establesh a connection ato the database
 	db, err := sql.Open("postgres",dsn)
@@ -38,8 +38,21 @@ func main () {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//Coneection status4
-	fmt.Println("connection status: success")
+	
+	//Let's insert a quote
 
+	insertQuote := `
+	INSERT INTO quotations (author_name, category, quote)
+	VALUES ($1, $2, @3)
+	`
+
+	_, err = db.Exec(insertQuote, "Lao Tzu",
+ 			"Life",
+		"Mastering others is strenth. Mastering yourself is true power.")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//CRUD OPERATIONS(CREARE, READ,UPDATE,DELETE)
 
 }
