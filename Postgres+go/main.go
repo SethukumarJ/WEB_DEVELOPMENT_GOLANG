@@ -43,16 +43,18 @@ func main () {
 
 	insertQuote := `
 	INSERT INTO quotations (author_name, category, quote)
-	VALUES ($1, $2, @3)
+	VALUES ($1, $2, $3)
+	RETURNING quotation_id
 	`
 
-	_, err = db.Exec(insertQuote, "Lao Tzu",
+	   quotation_id := 0
+	err = db.QueryRow(insertQuote, "Lao Tzu",
  			"Life",
-		"Mastering others is strenth. Mastering yourself is true power.")
+			"Mastering others is strenth. Mastering yourself is true power.").Scan(&quotation_id)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//CRUD OPERATIONS(CREARE, READ,UPDATE,DELETE)
+	fmt.Println("The recently inserted record has quotation_id:", quotation_id)
 
 }
